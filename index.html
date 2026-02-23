@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<!--
+=======================================================
+LÄRAR-LABBET: TRE DÖRRAR TILL SPELBASERAD MAGI
+=======================================================
+ETT META-ESCAPE ROOM FÖR LÄRARE
+Version: 1.0
+
+HUR MAN KÖR:
+  Öppna index.html i valfri modern webbläsare.
+  Fungerar 100% offline. Ladda upp till GitHub Pages direkt.
+
+FULLSCREEN:
+  Tryck F11 i webbläsaren för bästa projektorupplevelse.
+
+TANGENTBORD:
+  1/2/3 = välj dörr på dörrskärmen
+  Enter  = bekräfta / gå vidare
+  Tab    = navigera kontroller
+  Space  = aktivera fokuserat element
+
+ÄNDRA TEXTER:
+  Alla copy-texter finns i JS-objektet COPY (ca rad 400+).
+  Timer: ändra TIMER_SECONDS (standard: 720 = 12 min).
+  Finalkod: beräknas dynamiskt i state.finalCode – se calcFinalCode().
+
+LJUD:
+  Syntetiseras via Web Audio API (inget externt).
+  Klicka på högtalarikonen i headern för att stänga av.
+
+POÄNG:
+  Lås 1–3: +1 per lås. Final: +2. Max: 5 poäng.
+  (Hint-kostnader: implementerade men inaktiverade som standard.)
+=======================================================
+-->
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lärar-labbet: Tre dörrar till spelbaserad magi</title>
+<style>
+/* ===== FONTS ===== */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;600&family=Literata:ital,wght@0,400;0,600;1,400&display=swap');
+
+/* ===== CSS VARIABLES ===== */
+:root {
+  --bg:        #0f0e17;
+  --bg2:       #1a1929;
+  --bg3:       #252438;
+  --surface:   #2e2d45;
+  --border:    #3d3b5c;
+  --text:      #fffffe;
+  --text-muted:#a8a4c8;
+  --accent:    #ff8906;
+  --accent2:   #f25f4c;
+  --green:     #3da35d;
+  --green-bg:  rgba(61,163,93,0.15);
+  --yellow:    #e8c547;
+  --yellow-bg: rgba(232,197,71,0.15);
+  --red:       #f25f4c;
+  --red-bg:    rgba(242,95,76,0.15);
+  --door1:     #4a3728;
+  --door2:     #2a3a4a;
+  --door3:     #1f3a2a;
+  --radius:    12px;
+  --radius-lg: 20px;
+  --shadow:    0 8px 32px rgba(0,0,0,0.4);
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'Literata', Georgia, serif;
+  --font-mono:    'IBM Plex Mono', monospace;
+}
+
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 20px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ===== HEADER ===== */
+#header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(15,14,23,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: opacity var(--transition);
+}
+#header.hidden { opacity: 0; pointer-events: none; }
+#header-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+#header-right { display: flex; align-items: center; gap: 1.2rem; }
+#timer-display {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 5ch;
+  text-align: center;
+  transition: color var(--transition);
+}
+#timer-display.warning { color: var(--yellow); }
+#timer-display.danger  { color: var(--red); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+#score-display {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+#score-display span { color: var(--accent); font-weight: 600; }
+#sound-btn {
+  background: none; border: 1px solid var(--border);
+  color: var(--text-muted); cursor: pointer;
+  padding: 0.3rem 0.6rem; border-radius: 8px;
+  font-size: 1rem;
+  transition: all var(--transition);
+}
+#sound-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ===== MAIN ===== */
+#main {
+  padding-top: 70px;
+  min-height: 100vh;
+}
+
+/* ===== SECTIONS ===== */
+.section {
+  display: none;
+  animation: fadeIn 0.4s ease forwards;
+}
+.section.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+
+/* ===== SCREEN WRAPPER ===== */
+.screen {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 4rem;
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.8rem;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.8rem;
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: 0.8rem;
+}
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+p { margin-bottom: 0.8rem; color: var(--text-muted); font-size: 1rem; }
+p.lead { color: var(--text); font-size: 1.1rem; }
+.accent-text { color: var(--accent); }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.8rem;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+.btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.btn-primary {
+  background: var(--accent);
+  color: #0f0e17;
+}
+.btn-primary:hover { background: #ffaa3b; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,137,6,0.4); }
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 2px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm { padding: 0.5rem 1.2rem; font-size: 0.85rem; }
+.btn-lg { padding: 1rem 2.5rem; font-size: 1.2rem; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+/* ===== START SCREEN ===== */
+#start-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 70px);
+  text-align: center;
+  padding: 3rem 2rem;
+}
+.start-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  display: block;
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+#start-screen h1 { font-size: 2.4rem; max-width: 700px; margin-bottom: 1.2rem; }
+#start-screen p { max-width: 560px; font-size: 1.05rem; margin-bottom: 0.5rem; }
+.meta-tag {
+  display: inline-block;
+  background: var(--yellow-bg);
+  color: var(--yellow);
+  border: 1px solid var(--yellow);
+  padding: 0.2rem 0.8rem;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  margin-bottom: 2rem;
+  letter-spacing: 0.08em;
+}
+
+/* ===== DOORS SCREEN ===== */
+#doors-screen .screen { max-width: 1100px; }
+.doors-intro { text-align: center; margin-bottom: 2.5rem; }
+.doors-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.door-card {
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.5rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.door-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--transition);
+  border-radius: calc(var(--radius-lg) - 2px);
+}
+.door-card:hover::before { opacity: 1; }
+.door-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.door-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.door-1 { border-color: #6b4c3b; }
+.door-1::before { background: linear-gradient(135deg, rgba(107,76,59,0.3), transparent); }
+.door-1:hover { border-color: #a07060; }
+.door-2 { border-color: #3b5068; }
+.door-2::before { background: linear-gradient(135deg, rgba(59,80,104,0.3), transparent); }
+.door-2:hover { border-color: #6080a0; }
+.door-3 { border-color: #2d6040; }
+.door-3::before { background: linear-gradient(135deg, rgba(45,96,64,0.3), transparent); }
+.door-3:hover { border-color: #50c070; box-shadow: 0 8px 32px rgba(61,163,93,0.2); }
+.door-number {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+.door-icon { font-size: 3rem; margin-bottom: 1rem; }
+.door-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 0.8rem;
+}
+.door-desc { font-size: 0.85rem; color: var(--text-muted); font-style: italic; }
+.door-kbd {
+  margin-top: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+/* ===== MICRO SCENE ===== */
+#micro-scene .screen {
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 4rem;
+}
+.micro-icon { font-size: 4rem; margin-bottom: 1.5rem; }
+.micro-body {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+.micro-body p { color: var(--text); }
+
+/* ===== LAB SCREEN ===== */
+#lab-screen .screen { max-width: 960px; }
+.lab-intro {
+  background: linear-gradient(135deg, var(--bg2), var(--bg3));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.8rem 2rem;
+  margin-bottom: 2.5rem;
+}
+.lab-intro h2 { color: var(--accent); }
+.locks-status {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.2rem;
+  flex-wrap: wrap;
+}
+.lock-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text-muted);
+  transition: all var(--transition);
+}
+.lock-badge.solved {
+  border-color: var(--green);
+  background: var(--green-bg);
+  color: var(--green);
+}
+.lock-badge .lock-icon { font-size: 1rem; }
+
+/* ===== LOCK PANELS ===== */
+.lock-panel {
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  transition: border-color var(--transition);
+}
+.lock-panel.solved { border-color: var(--green); }
+.lock-panel.active { border-color: var(--accent); }
+.lock-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.lock-num {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.lock-solved-badge {
+  margin-left: auto;
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--green);
+}
+.lock-panel.solved .lock-solved-badge { display: flex; }
+
+/* ===== LOCK 1 – SORTING ===== */
+.sort-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+.sort-column {
+  background: var(--bg3);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  min-height: 180px;
+}
+.sort-column h3 {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 0.8rem;
+  text-align: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.sort-column.highlight { border-color: var(--accent); background: rgba(255,137,6,0.05); }
+.sort-cards { display: flex; flex-direction: column; gap: 0.5rem; }
+.sort-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  user-select: none;
+  line-height: 1.3;
+}
+.sort-card:hover { border-color: var(--accent); color: var(--accent); }
+.sort-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sort-card[data-placed="true"] {
+  background: var(--bg3);
+  border-color: var(--border);
+  opacity: 0.7;
+}
+.unsorted-pile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.2rem;
+  min-height: 60px;
+  padding: 0.8rem;
+  background: var(--bg3);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+.unsorted-pile .sort-card { flex: 0 0 auto; }
+
+/* ===== LOCK 2 – CHECKBOXES ===== */
+.checkbox-list { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.2rem; }
+.checkbox-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  user-select: none;
+}
+.checkbox-item:hover { border-color: var(--accent); }
+.checkbox-item input[type="checkbox"] {
+  width: 20px; height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.checkbox-item label { cursor: pointer; font-size: 0.95rem; }
+.checkbox-item.selected {
+  border-color: var(--accent);
+  background: rgba(255,137,6,0.08);
+}
+
+/* ===== LOCK 3 – MATCHING ===== */
+.match-grid { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.2rem; }
+.match-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+}
+.match-goal {
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+.match-arrow { color: var(--text-muted); font-size: 1.2rem; }
+.match-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  cursor: pointer;
+  width: 100%;
+  transition: border-color var(--transition);
+}
+.match-select:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+.match-select option { background: var(--bg2); }
+
+/* ===== FEEDBACK BOXES ===== */
+.feedback-box {
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  display: none;
+  animation: fadeIn 0.3s ease forwards;
+}
+.feedback-box.visible { display: block; }
+.feedback-box.success {
+  background: var(--green-bg);
+  border: 1px solid var(--green);
+  color: var(--green);
+}
+.feedback-box.error {
+  background: var(--red-bg);
+  border: 1px solid var(--red);
+  color: var(--red);
+}
+.feedback-box.hint {
+  background: var(--yellow-bg);
+  border: 1px solid var(--yellow);
+  color: var(--yellow);
+}
+.feedback-box ul { margin-top: 0.5rem; padding-left: 1.2rem; }
+.feedback-box li { margin-bottom: 0.3rem; }
+
+/* ===== HINT AREA ===== */
+.hint-area {
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.hint-text { font-size: 0.8rem; color: var(--text-muted); }
+
+/* ===== FINAL CODE SCREEN ===== */
+#final-screen .screen { max-width: 700px; text-align: center; }
+.safe-visual {
+  width: 200px; height: 200px;
+  margin: 0 auto 2rem;
+  position: relative;
+}
+.safe-body {
+  width: 100%;
+  height: 100%;
+  background: var(--bg2);
+  border: 3px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.safe-body.unlocked {
+  border-color: var(--green);
+  box-shadow: 0 0 40px rgba(61,163,93,0.4);
+}
+.safe-icon { font-size: 3rem; }
+.safe-lock-icon { font-size: 2rem; transition: transform 0.5s ease; }
+.safe-body.unlocked .safe-lock-icon { transform: rotate(30deg); filter: grayscale(0); }
+.code-input-group {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+.code-input {
+  width: 100%;
+  max-width: 240px;
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 2.5rem;
+  text-align: center;
+  letter-spacing: 0.3em;
+  padding: 0.8rem;
+  border-radius: var(--radius);
+  transition: border-color var(--transition);
+}
+.code-input:focus { outline: none; border-color: var(--accent); }
+.final-hint-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: left;
+}
+.final-hint-box strong { color: var(--text); }
+
+/* ===== WIN / TIMEOUT SCREENS ===== */
+#win-screen .screen, #timeout-screen .screen {
+  max-width: 700px;
+  text-align: center;
+  padding-top: 4rem;
+}
+.result-icon {
+  font-size: 5rem;
+  margin-bottom: 1.5rem;
+  display: block;
+  animation: pop 0.6s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+}
+@keyframes pop { from { transform:scale(0); opacity:0; } to { transform:scale(1); opacity:1; } }
+.score-big {
+  font-family: var(--font-mono);
+  font-size: 3rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 1rem 0;
+}
+.summary-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+.summary-box ul { padding-left: 1.2rem; }
+.summary-box li { color: var(--text); margin-bottom: 0.4rem; font-size: 0.9rem; }
+
+/* ===== DEBRIEF SCREEN ===== */
+#debrief-screen .screen { max-width: 900px; }
+.debrief-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.debrief-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+.debrief-card h3 { color: var(--accent); margin-bottom: 1rem; }
+.debrief-questions ol { padding-left: 1.2rem; }
+.debrief-questions li {
+  color: var(--text);
+  margin-bottom: 0.7rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.compare-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.compare-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+}
+.compare-arrow { color: var(--accent); flex-shrink: 0; font-weight: 700; }
+.compare-before { color: var(--text-muted); text-decoration: line-through; font-size: 0.82rem; }
+.compare-after { color: var(--text); }
+.restart-area { text-align: center; padding: 1rem 0; }
+
+/* ===== CONFETTI ===== */
+.confetti-piece {
+  position: fixed;
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 999;
+  animation: confettiDrop linear forwards;
+}
+@keyframes confettiDrop {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  html { font-size: 17px; }
+  .doors-grid { grid-template-columns: 1fr; }
+  .sort-grid { grid-template-columns: 1fr; }
+  .match-row { grid-template-columns: 1fr; }
+  .match-arrow { display: none; }
+  .debrief-grid { grid-template-columns: 1fr; }
+  h1 { font-size: 2rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header id="header" class="hidden" role="banner" aria-label="Spelstatus">
+  <div id="header-title">🔬 Lärar-labbet</div>
+  <div id="header-right">
+    <div id="timer-display" role="timer" aria-live="polite" aria-label="Tid kvar">12:00</div>
+    <div id="score-display">Poäng: <span id="score-val">0</span>/5</div>
+    <button id="sound-btn" aria-label="Ljud av/på" title="Ljud av/på">🔊</button>
+  </div>
+</header>
+
+<main id="main" aria-live="polite">
+
+  <!-- ===== START SCREEN ===== -->
+  <section id="start-screen" class="section active" aria-label="Startskärm">
+    <span class="start-icon" aria-hidden="true">🔐</span>
+    <div class="meta-tag">META-ESCAPE ROOM · FÖR LÄRARE</div>
+    <h1>Lärar-labbet:<br>Tre dörrar till spelbaserad magi</h1>
+    <p class="lead">Ni har 12 minuter. Välj en dörr. Bara en leder till Escape Room-labbet.</p>
+    <p>Tips: Spelet är självrefererande – ni spelar för att lära om att spela.</p>
+    <br>
+    <button class="btn btn-primary btn-lg" onclick="startGame()" id="start-btn" aria-label="Starta spelet">
+      Starta →
+    </button>
+  </section>
+
+  <!-- ===== DOORS SCREEN ===== -->
+  <section id="doors-screen" class="section" aria-label="Tre dörrar">
+    <div class="screen">
+      <div class="doors-intro">
+        <h2>Välj en dörr</h2>
+        <p>Tre pedagogiska vägar. Bara en leder till labbet.</p>
+      </div>
+      <div class="doors-grid" role="list">
+
+        <div class="door-card door-1" role="listitem" tabindex="0"
+             onclick="openDoor(1)" onkeydown="if(event.key==='Enter'||event.key===' ')openDoor(1)"
+             aria-label="Dörr 1: Klassisk Lärarmonolog">
+          <div class="door-number">DÖRR 1</div>
+          <div class="door-icon" aria-hidden="true">📢</div>
+          <div class="door-name">Klassisk Lärarmonolog</div>
+          <p class="door-desc">"45 min genomgång. Ni lyssnar. Ni nickar. Någon antecknar."</p>
+          <div class="door-kbd" aria-label="Tangent 1">Tryck [1]</div>
+        </div>
+
+        <div class="door-card door-2" role="listitem" tabindex="0"
+             onclick="openDoor(2)" onkeydown="if(event.key==='Enter'||event.key===' ')openDoor(2)"
+             aria-label="Dörr 2: Arbetsbladens Rike">
+          <div class="door-number">DÖRR 2</div>
+          <div class="door-icon" aria-hidden="true">📋</div>
+          <div class="door-name">Arbetsbladens Rike</div>
+          <p class="door-desc">"Gör uppgift 1–17. Vänd sida. Gör 18–34."</p>
+          <div class="door-kbd" aria-label="Tangent 2">Tryck [2]</div>
+        </div>
+
+        <div class="door-card door-3" role="listitem" tabindex="0"
+             onclick="openDoor(3)" onkeydown="if(event.key==='Enter'||event.key===' ')openDoor(3)"
+             aria-label="Dörr 3: Escape Room-Labbet">
+          <div class="door-number">DÖRR 3</div>
+          <div class="door-icon" aria-hidden="true">🧪</div>
+          <div class="door-name">Escape Room-Labbet</div>
+          <p class="door-desc">"Ledtrådar, tidspress och samarbete. Ni låser upp kunskap genom att använda den."</p>
+          <div class="door-kbd" aria-label="Tangent 3">Tryck [3]</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MICRO SCENE ===== -->
+  <section id="micro-scene" class="section" aria-label="Mikroscen">
+    <div class="screen">
+      <div class="micro-icon" id="micro-icon" aria-hidden="true">📢</div>
+      <h2 id="micro-title">Lärarmonologen</h2>
+      <div class="micro-body">
+        <p id="micro-text"></p>
+      </div>
+      <button class="btn btn-secondary" onclick="showDoors()" aria-label="Tillbaka till dörrarna">
+        ← Tillbaka till dörrarna
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== LAB SCREEN ===== -->
+  <section id="lab-screen" class="section" aria-label="Escape Room-labbet">
+    <div class="screen">
+
+      <div class="lab-intro">
+        <h2>🔬 Escape Room-Labbet</h2>
+        <p class="lead">Tre lås. Tre lärandebitar:</p>
+        <p>1) Digitalt vs analogt &nbsp;·&nbsp; 2) Kännetecken &amp; kvalitet &nbsp;·&nbsp; 3) Planering i praktiken</p>
+        <p>Öppna alla tre för att låsa upp finalen.</p>
+        <div class="locks-status" aria-label="Status för lås">
+          <div class="lock-badge" id="badge-1"><span class="lock-icon">🔒</span> Lås 1</div>
+          <div class="lock-badge" id="badge-2"><span class="lock-icon">🔒</span> Lås 2</div>
+          <div class="lock-badge" id="badge-3"><span class="lock-icon">🔒</span> Lås 3</div>
+        </div>
+      </div>
+
+      <!-- LÅS 1 -->
+      <div class="lock-panel active" id="lock-1-panel" aria-label="Lås 1: Digitalt vs Analogt">
+        <div class="lock-header">
+          <div class="lock-num">LÅS 1 · SORTERING</div>
+          <h3>Digitalt vs Analogt</h3>
+          <div class="lock-solved-badge" aria-label="Löst">✅ Löst</div>
+        </div>
+        <p style="margin-bottom:1rem">Klicka på ett kort och sedan på rätt kolumn för att sortera det.</p>
+
+        <div id="unsorted-pile" class="unsorted-pile" role="list" aria-label="Osorterade kort"></div>
+
+        <div class="sort-grid" role="group" aria-label="Sorteringskolumner">
+          <div class="sort-column" id="col-digital" role="list" aria-label="Digitalt">
+            <h3>💻 Digitalt</h3>
+            <div class="sort-cards" id="cards-digital"></div>
+          </div>
+          <div class="sort-column" id="col-analog" role="list" aria-label="Analogt">
+            <h3>🖐 Analogt</h3>
+            <div class="sort-cards" id="cards-analog"></div>
+          </div>
+          <div class="sort-column" id="col-hybrid" role="list" aria-label="Hybrid">
+            <h3>⚡ Hybrid</h3>
+            <div class="sort-cards" id="cards-hybrid"></div>
+          </div>
+        </div>
+
+        <div class="hint-area">
+          <span class="hint-text">Fastnat?</span>
+          <button class="btn btn-sm btn-secondary" onclick="showHint(1,1)" aria-label="Visa ledtråd för lås 1">💡 Tips</button>
+        </div>
+        <div class="feedback-box" id="fb-lock1" role="alert"></div>
+        <div style="margin-top:1rem">
+          <button class="btn btn-primary" onclick="solveLock1()" id="lock1-submit-btn" aria-label="Kontrollera svar för lås 1">Lås upp →</button>
+        </div>
+      </div>
+
+      <!-- LÅS 2 -->
+      <div class="lock-panel" id="lock-2-panel" aria-label="Lås 2: Kännetecken">
+        <div class="lock-header">
+          <div class="lock-num">LÅS 2 · VÄLJ TVÅ</div>
+          <h3>Kännetecken &amp; Kvalitet</h3>
+          <div class="lock-solved-badge" aria-label="Löst">✅ Löst</div>
+        </div>
+        <p style="margin-bottom:1rem">Välj de <strong>två påståenden</strong> som <em>inte</em> hör hemma i ett bra escape room.</p>
+
+        <div class="checkbox-list" role="group" aria-label="Påståenden" id="checkbox-list">
+          <!-- filled by JS -->
+        </div>
+
+        <div class="hint-area">
+          <span class="hint-text">Fastnat?</span>
+          <button class="btn btn-sm btn-secondary" onclick="showHint(2,1)" aria-label="Visa tips för lås 2">💡 Tips</button>
+        </div>
+        <div class="feedback-box" id="fb-lock2" role="alert"></div>
+        <div style="margin-top:1rem">
+          <button class="btn btn-primary" onclick="solveLock2()" id="lock2-submit-btn" aria-label="Kontrollera svar för lås 2">Lås upp →</button>
+        </div>
+      </div>
+
+      <!-- LÅS 3 -->
+      <div class="lock-panel" id="lock-3-panel" aria-label="Lås 3: Planering">
+        <div class="lock-header">
+          <div class="lock-num">LÅS 3 · MATCHNING</div>
+          <h3>Planering i Praktiken</h3>
+          <div class="lock-solved-badge" aria-label="Löst">✅ Löst</div>
+        </div>
+        <p style="margin-bottom:1rem">Matcha varje lärandemål med rätt mekanik.</p>
+
+        <div class="match-grid" role="group" aria-label="Matchning mål och mekanik" id="match-grid">
+          <!-- filled by JS -->
+        </div>
+
+        <div class="hint-area">
+          <span class="hint-text">Fastnat?</span>
+          <button class="btn btn-sm btn-secondary" onclick="showHint(3,1)" aria-label="Visa tips för lås 3">💡 Tips</button>
+        </div>
+        <div class="feedback-box" id="fb-lock3" role="alert"></div>
+        <div style="margin-top:1rem">
+          <button class="btn btn-primary" onclick="solveLock3()" id="lock3-submit-btn" aria-label="Kontrollera svar för lås 3">Lås upp →</button>
+        </div>
+      </div>
+
+      <!-- FINAL BUTTON -->
+      <div style="text-align:center; margin-top:1.5rem" id="final-btn-area" hidden>
+        <button class="btn btn-primary btn-lg" onclick="showFinal()" aria-label="Öppna kassaskåpet">
+          🔐 Öppna kassaskåpet →
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== FINAL CODE SCREEN ===== -->
+  <section id="final-screen" class="section" aria-label="Kodlås – kassaskåp">
+    <div class="screen">
+      <div class="safe-visual" aria-hidden="true">
+        <div class="safe-body" id="safe-body">
+          <div class="safe-icon">🗄️</div>
+          <div class="safe-lock-icon" id="safe-lock">🔒</div>
+        </div>
+      </div>
+      <h2>Kassaskåpet</h2>
+      <p class="lead">Ange den 4-siffriga koden för att låsa upp kassaskåpet.</p>
+
+      <div class="final-hint-box">
+        <strong>Ledtråd:</strong> Koden är summan av:<br>
+        Antal lås (→ <em>3</em>) + Antal <em>bra</em> kännetecken ni valde i lås 2 (→ tänk) + Antal rätta matchningar (→ <em>3</em>) + Antal <em>fel</em> dörrar ni klickade på (→ 0, 1 eller 2)
+      </div>
+
+      <div class="code-input-group">
+        <input type="number" class="code-input" id="code-input"
+               min="0" max="9999" placeholder="????"
+               aria-label="Ange 4-siffrig kod"
+               onkeydown="if(event.key==='Enter')checkFinalCode()">
+      </div>
+
+      <button class="btn btn-primary btn-lg" onclick="checkFinalCode()" aria-label="Öppna kassaskåpet">
+        Öppna →
+      </button>
+
+      <div class="feedback-box" id="fb-final" role="alert" style="margin-top:1.2rem"></div>
+    </div>
+  </section>
+
+  <!-- ===== WIN SCREEN ===== -->
+  <section id="win-screen" class="section" aria-label="Vinst">
+    <div class="screen">
+      <span class="result-icon" aria-hidden="true">🏆</span>
+      <h1>Grattis!</h1>
+      <p class="lead">Ni upplevde ett mini-escape room om… escape rooms.</p>
+      <div class="score-big" aria-label="Poäng">
+        <span id="win-score">5</span> / 5
+      </div>
+      <div class="summary-box">
+        <h3>Sammanfattning</h3>
+        <ul>
+          <li>Digitalt/analogt/hybrid – välj efter mål, grupp och logistik.</li>
+          <li>Bra kännetecken: alignment, parallella spår, tydlighet, rimliga hintar.</li>
+          <li>Planering: Mål → mekanik → estetik/poäng → playtest.</li>
+        </ul>
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="showDebrief()" aria-label="Gå till debrief">
+        Debrief →
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== TIMEOUT SCREEN ===== -->
+  <section id="timeout-screen" class="section" aria-label="Tid ute">
+    <div class="screen">
+      <span class="result-icon" aria-hidden="true">⏰</span>
+      <h1>Tiden är slut –<br>men lärandet fortsätter.</h1>
+      <p class="lead">Ni nådde <span id="timeout-score">0</span>/5 poäng.</p>
+      <div class="summary-box">
+        <p>Ta med er: börja med mål, håll puzzlen rimliga, gör vägen framåt synlig.</p>
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="showDebrief()" aria-label="Gå till debrief">
+        Debrief →
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== DEBRIEF SCREEN ===== -->
+  <section id="debrief-screen" class="section" aria-label="Debrief">
+    <div class="screen">
+      <h2>🗣️ Debrief</h2>
+      <p class="lead" style="margin-bottom:2rem">Diskutera i gruppen – 5–10 minuter.</p>
+
+      <div class="debrief-grid">
+        <div class="debrief-card debrief-questions">
+          <h3>Diskussionsfrågor</h3>
+          <ol>
+            <li>Vad i designen hjälpte eller hindrade er?</li>
+            <li>Hur märktes alignment – att pusslena tränade rätt sak?</li>
+            <li>När skulle du välja digitalt vs. analogt i ditt ämne?</li>
+            <li>Hur skala upp till 30 elever (lag, material, tider, roller)?</li>
+            <li>Vilket litet exempel vill du testa nästa vecka?</li>
+          </ol>
+        </div>
+
+        <div class="debrief-card">
+          <h3>Gamla vs. nya sätt</h3>
+          <div class="compare-list">
+            <div class="compare-item">
+              <span class="compare-arrow">→</span>
+              <div>
+                <div class="compare-before">Föreläsning</div>
+                <div class="compare-after">Utforskning: Elever hittar kunskap själva</div>
+              </div>
+            </div>
+            <div class="compare-item">
+              <span class="compare-arrow">→</span>
+              <div>
+                <div class="compare-before">Arbetsblad</div>
+                <div class="compare-after">Pussel med samma mål: relationer & förståelse</div>
+              </div>
+            </div>
+            <div class="compare-item">
+              <span class="compare-arrow">→</span>
+              <div>
+                <div class="compare-before">Slappt grupparbete</div>
+                <div class="compare-after">Roller: alla måste bidra för att gå vidare</div>
+              </div>
+            </div>
+            <div class="compare-item">
+              <span class="compare-arrow">→</span>
+              <div>
+                <div class="compare-before">Prov</div>
+                <div class="compare-after">Formativ återkoppling i realtid via hintar</div>
+              </div>
+            </div>
+            <div class="compare-item">
+              <span class="compare-arrow">→</span>
+              <div>
+                <div class="compare-before">Lugn lektionsstruktur</div>
+                <div class="compare-after">Timer-fokus: ramar ökar energi och fokus</div>
+              </div>
+            </div>
+            <div class="compare-item">
+              <span class="compare-arrow">→</span>
+              <div>
+                <div class="compare-before">Läraren som kontrollant</div>
+                <div class="compare-after">Spelledare: mindre polis, mer facilitator</div>
+              </div>
+            </div>
+            <div class="compare-item">
+              <span class="compare-arrow">→</span>
+              <div>
+                <div class="compare-before">Ensidigt</div>
+                <div class="compare-after">Multimodalt: visuellt, taktilt, språkligt, motoriskt</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="restart-area">
+        <button class="btn btn-secondary" onclick="restartGame()" aria-label="Starta om spelet">↺ Starta om</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ============================================================
+   STATE
+   ============================================================ */
+const TIMER_SECONDS = 720; // 12 minutes
+
+const state = {
+  score: 0,
+  timeLeft: TIMER_SECONDS,
+  wrongDoorCount: 0,
+  locksSolved: [false, false, false],
+  timerInterval: null,
+  soundEnabled: true,
+  gameStarted: false,
+  gameOver: false,
+  selectedCard: null,   // for lock 1 click-select
+};
+
+function calcFinalCode() {
+  // 3 (locks) + 2 (good traits chosen in lock 2) + 3 (matchings) + wrongDoors
+  return 3 + 2 + 3 + state.wrongDoorCount; // = 8 + wrongDoors
+}
+
+/* ============================================================
+   AUDIO (Web Audio API – no external files)
+   ============================================================ */
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playSound(type) {
+  if (!state.soundEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const now = ctx.currentTime;
+    if (type === 'tick') {
+      osc.frequency.setValueAtTime(600, now);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      osc.start(now); osc.stop(now + 0.05);
+    } else if (type === 'success') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523, now);
+      osc.frequency.setValueAtTime(659, now + 0.1);
+      osc.frequency.setValueAtTime(784, now + 0.2);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc.start(now); osc.stop(now + 0.5);
+    } else if (type === 'error') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, now);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.start(now); osc.stop(now + 0.3);
+    } else if (type === 'win') {
+      const freqs = [523, 659, 784, 1047];
+      freqs.forEach((f, i) => {
+        const o2 = ctx.createOscillator();
+        const g2 = ctx.createGain();
+        o2.connect(g2); g2.connect(ctx.destination);
+        o2.frequency.setValueAtTime(f, now + i*0.12);
+        g2.gain.setValueAtTime(0.15, now + i*0.12);
+        g2.gain.exponentialRampToValueAtTime(0.001, now + i*0.12 + 0.4);
+        o2.start(now + i*0.12); o2.stop(now + i*0.12 + 0.4);
+      });
+    }
+  } catch(e) {}
+}
+
+/* ============================================================
+   TIMER
+   ============================================================ */
+function startTimer() {
+  if (state.timerInterval) clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    if (state.gameOver) return;
+    state.timeLeft--;
+    updateTimerUI();
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timerInterval);
+      showTimeout();
+    }
+    if (state.timeLeft === 60) playSound('tick');
+  }, 1000);
+}
+
+function updateTimerUI() {
+  const m = Math.floor(state.timeLeft / 60);
+  const s = state.timeLeft % 60;
+  const display = document.getElementById('timer-display');
+  display.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  display.classList.remove('warning', 'danger');
+  if (state.timeLeft <= 60) display.classList.add('danger');
+  else if (state.timeLeft <= 120) display.classList.add('warning');
+}
+
+function updateScoreUI() {
+  document.getElementById('score-val').textContent = state.score;
+}
+
+/* ============================================================
+   SECTION NAVIGATION
+   ============================================================ */
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ============================================================
+   START GAME
+   ============================================================ */
+function startGame() {
+  state.score = 0;
+  state.timeLeft = TIMER_SECONDS;
+  state.wrongDoorCount = 0;
+  state.locksSolved = [false, false, false];
+  state.gameOver = false;
+  state.selectedCard = null;
+  updateScoreUI();
+  updateTimerUI();
+  document.getElementById('header').classList.remove('hidden');
+  initLock1();
+  initLock2();
+  initLock3();
+  startTimer();
+  showDoors();
+  playSound('tick');
+}
+
+/* ============================================================
+   DOORS
+   ============================================================ */
+function showDoors() {
+  showSection('doors-screen');
+}
+
+function openDoor(n) {
+  if (n === 3) {
+    showSection('lab-screen');
+    return;
+  }
+  // Wrong door
+  state.wrongDoorCount++;
+  const data = {
+    1: {
+      icon: '📢',
+      title: 'Lärarmonologen',
+      text: 'Detta funkar ibland. Men det bygger sällan samarbete, problemlösning eller flow. Bra för snabb standardisering. Mindre bra för engagemang.'
+    },
+    2: {
+      icon: '📋',
+      title: 'Arbetsbladens Rike',
+      text: 'Tränar färdighet, men ofta låg kognitiv nivå och svag motivation. Tyst blir det – men lärande? Nja.'
+    }
+  };
+  const d = data[n];
+  document.getElementById('micro-icon').textContent = d.icon;
+  document.getElementById('micro-title').textContent = d.title;
+  document.getElementById('micro-text').textContent = d.text;
+  showSection('micro-scene');
+  playSound('error');
+}
+
+/* ============================================================
+   LOCK 1 – SORTING
+   ============================================================ */
+const LOCK1_CARDS = [
+  { id: 'c1', text: 'QR-koder som leder till ledtrådar', correct: 'digital' },
+  { id: 'c2', text: 'Fysiska hänglås med kod', correct: 'analog' },
+  { id: 'c3', text: 'Google Form som "metallås" (sections + lösenord)', correct: 'digital' },
+  { id: 'c4', text: 'Kuvert med dolda ledtrådar', correct: 'analog' },
+  { id: 'c5', text: 'Timer på vägg, kopplad till skärm', correct: 'hybrid' },
+  { id: 'c6', text: 'Blacklight-penna på kartong', correct: 'analog' },
+];
+
+let lock1State = {}; // cardId -> 'unsorted'|'digital'|'analog'|'hybrid'
+
+function initLock1() {
+  LOCK1_CARDS.forEach(c => lock1State[c.id] = 'unsorted');
+  renderLock1();
+}
+
+function renderLock1() {
+  const unsortedEl = document.getElementById('unsorted-pile');
+  const digitalEl  = document.getElementById('cards-digital');
+  const analogEl   = document.getElementById('cards-analog');
+  const hybridEl   = document.getElementById('cards-hybrid');
+
+  unsortedEl.innerHTML = '';
+  digitalEl.innerHTML = '';
+  analogEl.innerHTML = '';
+  hybridEl.innerHTML = '';
+
+  LOCK1_CARDS.forEach(card => {
+    const el = document.createElement('div');
+    el.className = 'sort-card';
+    el.textContent = card.text;
+    el.dataset.id = card.id;
+    el.tabIndex = 0;
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', card.text);
+
+    const loc = lock1State[card.id];
+    el.onclick = () => handleCardClick(card.id);
+    el.onkeydown = (e) => { if(e.key==='Enter'||e.key===' ') handleCardClick(card.id); };
+
+    if (loc === 'unsorted') unsortedEl.appendChild(el);
+    else if (loc === 'digital') digitalEl.appendChild(el);
+    else if (loc === 'analog') analogEl.appendChild(el);
+    else if (loc === 'hybrid') hybridEl.appendChild(el);
+  });
+
+  // Highlight selected
+  if (state.selectedCard) {
+    const sel = document.querySelector(`.sort-card[data-id="${state.selectedCard}"]`);
+    if (sel) {
+      sel.style.borderColor = 'var(--accent)';
+      sel.style.background = 'rgba(255,137,6,0.15)';
+    }
+  }
+
+  // Column click handlers
+  ['digital','analog','hybrid'].forEach(col => {
+    const colEl = document.getElementById(`col-${col}`);
+    colEl.onclick = (e) => {
+      if (e.target.classList.contains('sort-card')) return;
+      if (state.selectedCard) {
+        lock1State[state.selectedCard] = col;
+        state.selectedCard = null;
+        renderLock1();
+        playSound('tick');
+      }
+    };
+  });
+}
+
+function handleCardClick(cardId) {
+  if (state.locksSolved[0]) return;
+  if (state.selectedCard === cardId) {
+    // Deselect
+    state.selectedCard = null;
+    renderLock1();
+    return;
+  }
+  // Select card
+  state.selectedCard = cardId;
+  renderLock1();
+  playSound('tick');
+}
+
+function solveLock1() {
+  if (state.locksSolved[0]) return;
+  let correct = 0;
+  LOCK1_CARDS.forEach(c => {
+    if (lock1State[c.id] === c.correct) correct++;
+  });
+
+  const fb = document.getElementById('fb-lock1');
+  if (correct === LOCK1_CARDS.length) {
+    fb.className = 'feedback-box visible success';
+    fb.innerHTML = `<strong>✅ Rätt!</strong> Digitalt = enkelt att duplicera, distansvänligt, tillgänglighetsstöd. Analogt = taktilt, rumsupplevelse, wow-känsla. Hybrid = vanligast i klassrum – kombinerar styrkorna.`;
+    markLockSolved(0);
+  } else {
+    fb.className = 'feedback-box visible error';
+    fb.innerHTML = `<strong>Inte riktigt.</strong> ${correct} av ${LOCK1_CARDS.length} rätt. Tänk på var ledtråden lever: skärm/enhet vs. fysisk värld.`;
+    playSound('error');
+  }
+}
+
+/* ============================================================
+   LOCK 2 – CHECKBOXES
+   ============================================================ */
+const LOCK2_ITEMS = [
+  { id: 'q1', text: 'Clues är tydligt kopplade till mål och innehåll.', bad: false },
+  { id: 'q2', text: 'Alla ledtrådar är så svåra som möjligt.', bad: true },
+  { id: 'q3', text: 'Lag kan göra framsteg parallellt.', bad: false },
+  { id: 'q4', text: 'Poängsystemet är hemligt och otydligt.', bad: true },
+];
+
+function initLock2() {
+  const list = document.getElementById('checkbox-list');
+  list.innerHTML = '';
+  LOCK2_ITEMS.forEach(item => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'checkbox-item';
+    wrapper.innerHTML = `
+      <input type="checkbox" id="${item.id}" name="lock2">
+      <label for="${item.id}">${item.text}</label>
+    `;
+    const cb = wrapper.querySelector('input');
+    cb.addEventListener('change', () => {
+      wrapper.classList.toggle('selected', cb.checked);
+      // max 2
+      const checked = document.querySelectorAll('#checkbox-list input:checked');
+      if (checked.length > 2) { cb.checked = false; wrapper.classList.remove('selected'); }
+    });
+    list.appendChild(wrapper);
+  });
+}
+
+function solveLock2() {
+  if (state.locksSolved[1]) return;
+  const checked = Array.from(document.querySelectorAll('#checkbox-list input:checked')).map(el => el.id);
+  const fb = document.getElementById('fb-lock2');
+
+  if (checked.length !== 2) {
+    fb.className = 'feedback-box visible error';
+    fb.textContent = 'Välj exakt två påståenden.';
+    playSound('error');
+    return;
+  }
+
+  const badIds = LOCK2_ITEMS.filter(i => i.bad).map(i => i.id);
+  const correct = checked.every(id => badIds.includes(id));
+
+  if (correct) {
+    fb.className = 'feedback-box visible success';
+    fb.innerHTML = `<strong>✅ Rätt!</strong> Bra escape rooms i skolan har:
+      <ul>
+        <li>Alignment: varje pussel tränar rätt förmåga/innehåll.</li>
+        <li>Flöde: flera spår → färre flaskhalsar.</li>
+        <li>Transparens: tydlig målbild, rimliga hintar.</li>
+      </ul>
+      Dåligt: maximal svårighet, otydlig logik.`;
+    markLockSolved(1);
+  } else {
+    fb.className = 'feedback-box visible error';
+    fb.textContent = 'Inte riktigt. Vilka påståenden skulle du aldrig se i ett väldesignat escape room?';
+    playSound('error');
+  }
+}
+
+/* ============================================================
+   LOCK 3 – MATCHING
+   ============================================================ */
+const LOCK3_GOALS = [
+  { id: 'A', label: 'A', text: 'Träna källkritik.' },
+  { id: 'B', label: 'B', text: 'Begreppsförståelse i biologi (cellens delar).' },
+  { id: 'C', label: 'C', text: 'Samarbetsförmåga och kommunikation.' },
+];
+
+const LOCK3_MECHANICS = [
+  { id: '1', text: '1) Identifiera vilseledande artiklar, lås upp rätt källa (QR + Google Form-kod).' },
+  { id: '2', text: '2) Dra-och-släpp etiketter på cellbild; rätt placering ger lösenord.' },
+  { id: '3', text: '3) Rollkort (tyst läsare, högläsare, sammanfattare) krävs för att kombinera tre fragment.' },
+];
+
+const LOCK3_CORRECT = { A: '1', B: '2', C: '3' };
+
+function initLock3() {
+  const grid = document.getElementById('match-grid');
+  grid.innerHTML = '';
+  LOCK3_GOALS.forEach(goal => {
+    const row = document.createElement('div');
+    row.className = 'match-row';
+    const options = LOCK3_MECHANICS.map(m => `<option value="${m.id}">${m.text}</option>`).join('');
+    row.innerHTML = `
+      <div class="match-goal"><strong>Mål ${goal.label}:</strong> ${goal.text}</div>
+      <div class="match-arrow" aria-hidden="true">→</div>
+      <select class="match-select" id="match-${goal.id}" aria-label="Mekanik för mål ${goal.label}">
+        <option value="">Välj mekanik…</option>
+        ${options}
+      </select>
+    `;
+    grid.appendChild(row);
+  });
+}
+
+function solveLock3() {
+  if (state.locksSolved[2]) return;
+  const fb = document.getElementById('fb-lock3');
+  let correct = 0;
+  let allSelected = true;
+
+  LOCK3_GOALS.forEach(goal => {
+    const sel = document.getElementById(`match-${goal.id}`);
+    if (!sel.value) { allSelected = false; return; }
+    if (sel.value === LOCK3_CORRECT[goal.id]) correct++;
+  });
+
+  if (!allSelected) {
+    fb.className = 'feedback-box visible error';
+    fb.textContent = 'Välj mekanik för alla tre mål.';
+    playSound('error');
+    return;
+  }
+
+  if (correct === 3) {
+    fb.className = 'feedback-box visible success';
+    fb.innerHTML = `<strong>✅ Rätt!</strong> Designrecept: Börja med lärandemålen → välj mekanik som tränar precis det → lägg på timer/poäng sist.`;
+    markLockSolved(2);
+  } else {
+    fb.className = 'feedback-box visible error';
+    fb.textContent = `${correct} av 3 rätt. Tänk: vilken aktivitet tränar precis den förmågan?`;
+    playSound('error');
+  }
+}
+
+/* ============================================================
+   MARK LOCK SOLVED
+   ============================================================ */
+function markLockSolved(index) {
+  state.locksSolved[index] = true;
+  state.score++;
+  updateScoreUI();
+  playSound('success');
+
+  const panel = document.getElementById(`lock-${index+1}-panel`);
+  panel.classList.add('solved');
+  panel.classList.remove('active');
+
+  const badge = document.getElementById(`badge-${index+1}`);
+  badge.classList.add('solved');
+  badge.innerHTML = `<span class="lock-icon">🔓</span> Lås ${index+1}`;
+
+  // Disable submit button
+  const btn = document.getElementById(`lock${index+1}-submit-btn`);
+  if (btn) btn.disabled = true;
+
+  // Check if all solved
+  if (state.locksSolved.every(Boolean)) {
+    document.getElementById('final-btn-area').removeAttribute('hidden');
+    document.getElementById('final-btn-area').scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+/* ============================================================
+   HINTS
+   ============================================================ */
+const HINTS = {
+  1: ['Tänk: var lever ledtråden rent fysiskt? Skärm/dator = Digitalt. Pappers/rumslig = Analogt. Båda = Hybrid.'],
+  2: ['Tänk: vad är typiskt för ett väldesignat escape room? Välj de alternativ som motarbetar lärande.'],
+  3: ['Mål A handlar om att bedöma trovärdighet. Mål B handlar om namngivning av delar. Mål C kräver att man pratar med varandra.'],
+};
+
+function showHint(lock, level) {
+  const hints = HINTS[lock];
+  const fb = document.getElementById(`fb-lock${lock}`);
+  fb.className = 'feedback-box visible hint';
+  fb.textContent = hints[Math.min(level, hints.length) - 1];
+}
+
+/* ============================================================
+   FINAL CODE
+   ============================================================ */
+function showFinal() {
+  showSection('final-screen');
+  document.getElementById('code-input').focus();
+}
+
+function checkFinalCode() {
+  const raw = document.getElementById('code-input').value;
+  const entered = parseInt(raw, 10);
+  const correct = calcFinalCode();
+  const fb = document.getElementById('fb-final');
+
+  if (isNaN(entered)) {
+    fb.className = 'feedback-box visible error';
+    fb.textContent = 'Ange en sifferkod.';
+    return;
+  }
+
+  if (entered === correct) {
+    // Unlock animation
+    document.getElementById('safe-body').classList.add('unlocked');
+    document.getElementById('safe-lock').textContent = '🔓';
+    fb.className = 'feedback-box visible success';
+    fb.innerHTML = `<strong>✅ Kassaskåpet är öppet!</strong> Lösenordet inuti: <em>"Begin with goals."</em><br>Meta: Ni jagade kod, men nyckeln var alltid lärandemålen.`;
+    state.score += 2;
+    updateScoreUI();
+    playSound('win');
+    state.gameOver = true;
+    clearInterval(state.timerInterval);
+    setTimeout(() => {
+      spawnConfetti();
+      showWin();
+    }, 2000);
+  } else {
+    fb.className = 'feedback-box visible error';
+    fb.innerHTML = `<strong>Fel kod.</strong> Tänk: Hur många bra kännetecken valde ni? Hur många matchningar? Hur många fel dörrar klickade ni på?`;
+    playSound('error');
+  }
+}
+
+/* ============================================================
+   WIN / TIMEOUT / DEBRIEF
+   ============================================================ */
+function showWin() {
+  document.getElementById('win-score').textContent = state.score;
+  // Save to localStorage
+  try { localStorage.setItem('larar-labbet-score', state.score); } catch(e) {}
+  showSection('win-screen');
+  playSound('win');
+}
+
+function showTimeout() {
+  if (state.gameOver) return;
+  state.gameOver = true;
+  document.getElementById('timeout-score').textContent = state.score;
+  showSection('timeout-screen');
+  playSound('error');
+}
+
+function showDebrief() {
+  showSection('debrief-screen');
+}
+
+function restartGame() {
+  clearInterval(state.timerInterval);
+  document.getElementById('header').classList.add('hidden');
+  // Reset safe visual
+  document.getElementById('safe-body').classList.remove('unlocked');
+  document.getElementById('safe-lock').textContent = '🔒';
+  document.getElementById('code-input').value = '';
+  // Reset lock panels
+  for(let i=1;i<=3;i++) {
+    const p = document.getElementById(`lock-${i}-panel`);
+    p.classList.remove('solved','active');
+    if(i===1) p.classList.add('active');
+    const b = document.getElementById(`lock${i}-submit-btn`);
+    if(b) b.disabled = false;
+    const fb = document.getElementById(`fb-lock${i}`);
+    if(fb) { fb.className='feedback-box'; fb.innerHTML=''; }
+    document.getElementById(`badge-${i}`).classList.remove('solved');
+    document.getElementById(`badge-${i}`).innerHTML = `<span class="lock-icon">🔒</span> Lås ${i}`;
+  }
+  document.getElementById('fb-final').className = 'feedback-box';
+  document.getElementById('final-btn-area').setAttribute('hidden','');
+  showSection('start-screen');
+}
+
+/* ============================================================
+   CONFETTI
+   ============================================================ */
+function spawnConfetti() {
+  const colors = ['#ff8906','#f25f4c','#3da35d','#e8c547','#a786df'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left: ${Math.random()*100}vw;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      width: ${6+Math.random()*10}px;
+      height: ${6+Math.random()*10}px;
+      animation-duration: ${1.5+Math.random()*2}s;
+      animation-delay: ${Math.random()*0.5}s;
+    `;
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+}
+
+/* ============================================================
+   KEYBOARD SHORTCUTS
+   ============================================================ */
+document.addEventListener('keydown', (e) => {
+  // Door shortcuts
+  if (document.getElementById('doors-screen').classList.contains('active')) {
+    if (e.key === '1') openDoor(1);
+    if (e.key === '2') openDoor(2);
+    if (e.key === '3') openDoor(3);
+  }
+  // Enter on start screen
+  if (document.getElementById('start-screen').classList.contains('active')) {
+    if (e.key === 'Enter') startGame();
+  }
+  // Enter on final
+  if (document.getElementById('final-screen').classList.contains('active')) {
+    if (e.key === 'Enter' && document.activeElement !== document.getElementById('code-input')) {
+      checkFinalCode();
+    }
+  }
+});
+
+/* ============================================================
+   SOUND TOGGLE
+   ============================================================ */
+document.getElementById('sound-btn').addEventListener('click', () => {
+  state.soundEnabled = !state.soundEnabled;
+  document.getElementById('sound-btn').textContent = state.soundEnabled ? '🔊' : '🔇';
+  document.getElementById('sound-btn').setAttribute('aria-label', state.soundEnabled ? 'Ljud på' : 'Ljud av');
+});
+</script>
+</body>
+</html>
