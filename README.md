@@ -1,6 +1,6 @@
 # LÄRAR-LABBET: Case 47 — Engagemangets försvinnande (Escape room)
 
-Ett offline, svinbra mini-escape room för lärare som **lär ut escape room-design genom att spelas**.
+Ett offline mini-escape room för lärare som **förklarar upplägget genom att spelas** (lärarvänlig version).
 
 ## ✅ Kör lokalt
 1. Ladda ner/klona projektet

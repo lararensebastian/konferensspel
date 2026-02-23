@@ -11,37 +11,37 @@ const LAB = {
 
   story: {
     coldOpen: [
-      "Ni kliver in i Lärar-labbet. Lamporna surrar. På tavlan: ett enda ord – ENGAGEMANG.",
-      "Rektor har lämnat en lapp: “Det försvann någon gång efter genomgång #3. Hitta det. Snabbt.”",
-      "Ni är inte här för att lyssna. Ni är här för att spela er till kunskap."
+      "Ni sitter i konferensrummet 4008. Kaffet är varmt. Tiden är knapp.",
+      "Ni ska snart bygga egna escape rooms i ämnesgrupper — men först måste ni spela ett.",
+      "Ingen förkunskap behövs. Ett klassrums-escape room är bara: tydligt mål + små steg + samarbete + lås/koder som visar framsteg."
     ],
-    goal: "Samla 6 bevis och knäck slutkoden innan tiden tar slut."
+    goal: "Lös tre problem, samla 6 bevis och öppna kassaskåpet — då är ni redo för workshop."
   },
 
   roles: [
     {
       id: "facilitator",
-      name: "Spelledare",
-      blurb: "Håller tempo, läser upp text, bestämmer när ni tar en hint.",
-      perk: "Får tillgång till Spelledarvy (utan full spoil)."
+      name: "Den som håller ihop det",
+      blurb: "Läser upp, håller tempo, ser till att alla kommer till tals.",
+      perk: "Kan öppna en kort ledarhjälp (utan spoilers)."
     },
     {
       id: "logician",
-      name: "Logiker",
-      blurb: "Ser mönster, håller koll på regler, gör sammanfattningar.",
-      perk: "Får en extra “tänkfråga”-hint gratis (utan tidsstraff)."
+      name: "Den som ser mönster",
+      blurb: "Håller koll på regler, sammanfattar, fångar detaljer.",
+      perk: "Första hint i varje rum kostar ingen tid (en gång)."
     },
     {
       id: "designer",
-      name: "Designer",
-      blurb: "Översätter allt till didaktik: mål → mekanik → ledtråd → test.",
-      perk: "Får en bonusrad i debrief med 'bygg i morgon'-mall."
+      name: "Den som tänker klassrum",
+      blurb: "Översätter allt till ‘hur gör jag detta med elever?’",
+      perk: "Får en extra ‘bygg i morgon’-mall i slutet."
     },
     {
       id: "communicator",
-      name: "Kommunikatör",
-      blurb: "Håller laget synkat, läser, fördelar uppgifter och återkopplar.",
-      perk: "Kan aktivera “Sammanfatta loggen” (auto-sammanfattning)."
+      name: "Den som håller laget synkat",
+      blurb: "Fördelar uppgifter, håller alla med, stoppar sidospår.",
+      perk: "Kan trycka ‘Sammanfatta’ när det blir rörigt."
     }
   ],
 
@@ -52,12 +52,12 @@ const LAB = {
       title: "Arkivet",
       icon: "🗃️",
       desc: "Lådor, mappar och… en trasig checklista. Sortera bevis och hitta designfelet.",
-      hint: "Det här rummet lär ut: alignment & tydlig målbild.",
+      hint: "Det här rummet handlar om: att elever förstår exakt vad de ska göra (och varför).",
       barrierKey: "A",
       evidenceEarned: 2,
       puzzle: {
         type: "matrix",
-        prompt: "Ni hittar 6 ledtrådar. Tre är BRA (hjälper lärandemål). Tre är DÅLIGA (låter coolt men tränar fel sak). Markera tre som är DÅLIGA.",
+        prompt: "Ni ser 6 påståenden om en lektion. Tre hjälper elever att lyckas. Tre brukar skapa frustration. Markera de tre som skapar problem.",
         options: [
           { id:"o1", text:"Varje pussel tränar ett tydligt lärandemål.", bad:false },
           { id:"o2", text:"Pusslen är maximalt svåra så att de 'känns äkta'.", bad:true },
@@ -69,7 +69,7 @@ const LAB = {
         correctBad: ["o2","o4","o6"],
         successCopy: [
           "✅ Ni hittade designfelet: det dåliga escape roomet prioriterade mystik framför lärande.",
-          "Bevis A säkrat: ALIGNMENT betyder att varje pussel tränar rätt sak – och att 'vad som räknas' är tydligt."
+          "Bevis A säkrat: När ‘vad som räknas’ är tydligt vågar fler elever försöka – och du tränar rätt sak."
         ],
         failCopy: "Inte riktigt. Vilka tre påståenden vill du ALDRIG se i ett klassrums-escape room?",
         hintCopy: "Tips: leta efter saker som gör elever frustrerade eller som inte tränar innehållet."
@@ -80,7 +80,7 @@ const LAB = {
       title: "Studion",
       icon: "🎛️",
       desc: "En kontrollpanel med tre spår. För att undvika flaskhalsar krävs parallella vägar.",
-      hint: "Det här rummet lär ut: flöde & parallella spår.",
+      hint: "Det här rummet handlar om: att slippa väntetid och få alla aktiva samtidigt.",
       barrierKey: "B",
       evidenceEarned: 2,
       puzzle: {
@@ -108,9 +108,9 @@ const LAB = {
         ],
         successCopy: [
           "✅ Rätt. Parallella spår håller fler hjärnor igång.",
-          "Bevis B säkrat: FLÖDE = minska väntan, synliggör framsteg, låt grupper arbeta samtidigt."
+          "Bevis B säkrat: Bygg bort köer. Gör framsteg synligt. Låt flera saker kunna hända samtidigt."
         ],
-        failCopy: "Det där skapar ofta väntan eller otydlighet. Vilket upplägg håller ALLA aktiva?",
+        failCopy: "Det där brukar skapa väntan eller att några hamnar utanför. Vilket upplägg håller fler aktiva?",
         hintCopy: "Tips: I ett klassrum är 'väntan' en engagemangsdödare. Designa bort köer."
       }
     },
@@ -119,12 +119,12 @@ const LAB = {
       title: "Fältlabbet",
       icon: "🧪",
       desc: "En väska med blandade komponenter. Koppla mekanik till lärandemål (mål → mekanik).",
-      hint: "Det här rummet lär ut: designordning & mekanikmatchning.",
+      hint: "Det här rummet handlar om: att börja med målet och välja en rimlig aktivitet.",
       barrierKey: "C",
       evidenceEarned: 2,
       puzzle: {
         type: "match",
-        prompt: "Matcha tre lärandemål med rätt mekanik.",
+        prompt: "Matcha tre mål med en aktivitet som faktiskt tränar det målet.",
         goals: [
           { id:"G1", text:"Träna källkritik." },
           { id:"G2", text:"Begrepp i biologi (cellens delar)." },
@@ -138,7 +138,7 @@ const LAB = {
         correct: { G1:"M1", G2:"M2", G3:"M3" },
         successCopy: [
           "✅ Matchat. Ni designar som proffs.",
-          "Bevis C säkrat: DESIGNORDNING = Mål → Mekanik → Ledtrådar/estetik → Playtest."
+          "Bevis C säkrat: Börja med målet. Välj aktivitet. Lägg på form/stil sist. Testa snabbt med en kollega."
         ],
         failCopy: "Nära! Fråga: vilken mekanik tränar den specifika förmågan – inte bara 'är kul'?",
         hintCopy: "Tips: källkritik = bedöma trovärdighet. Cell = namnge/placera. Samarbete = beroende mellan personer."
@@ -162,17 +162,17 @@ const LAB = {
     ],
     // we compute a 4-digit code by concatenating digits, not summing (more escape-room-ish)
     // Example: 3-3-2-1 => 3321
-    explain: "Koden är inte en summa. Den är ett kvitto. Skriv siffrorna i ordning: [barriärer]-[bra principer]-[utan hint]-[felval]."
+    explain: "Koden är ett kvitto på hur ni spelade. Skriv siffrorna i ordning: barriärer – bra saker ni såg – rum utan hint – felval."
   },
 
   debrief: {
     title: "Debrief (5–10 min)",
     questions: [
-      "Vad fick er att känna framsteg? Vad kändes som stopp?",
-      "Var märktes alignment (pussel tränar rätt sak) – och var hade det kunnat brytas?",
-      "Hur skulle ni göra detta 'digilogt' i ett klassrum (fysiskt + digitalt)?",
-      "Vilken mekanik i dag kan du återanvända i ditt ämne nästa vecka?",
-      "Vilken hint-regel är rimlig för dina elever – och varför?"
+      "Vad gjorde att ni kände att ni kom framåt?",
+      "Var blev det rörigt — och vad hade gjort det enklare?",
+      "Vilken del hade funkat i din undervisning nästa vecka?",
+      "Vad behöver dina elever för att våga börja?",
+      "Hur vill du ge hjälp utan att ge svaret direkt?"
     ],
     takeaway: [
       "Börja med målen. Välj mekanik som tränar exakt det du vill mäta.",
@@ -190,15 +190,15 @@ const LAB = {
 
   facilitator: {
     cues: [
-      "Om gruppen fastnar: fråga 'Vad betyder framsteg här?' innan du ger hint.",
-      "Be dem alltid säga högt: mål → mekanik → ledtråd. Det är designmuskel.",
-      "Efter varje rum: ta 20 sekunder, låt dem formulera en lärdom i en mening."
+      "Om gruppen fastnar: fråga ‘Vad är nästa lilla steg?’ innan du ger hint.",
+      "Be dem säga: ‘Vad ska eleven kunna visa här?’ (inte ‘vad är det roliga?’).",
+      "Efter varje rum: be någon säga en lärdom i en mening."
     ],
     timing: [
-      "0–2 min: roller + cold open",
-      "2–11 min: tre rum (i valfri ordning)",
-      "11–14 min: kassaskåp",
-      "14–15 min: snabb debrief (eller fortsätt efter)"
+      "0–2 min: start + (valfri) roll",
+      "2–12 min: tre rum (valfri ordning)",
+      "12–15 min: kassaskåp",
+      "15+ min: debrief och övergång till ämnesgrupper"
     ]
   }
 };

@@ -193,7 +193,7 @@
                 <span class="tag">Lärande genom spel</span>
                 <span class="tag">15 minuter</span>
               </div>
-              <h1 class="h1">Ni ska lösa ett fall.<br/>Men fallet är er undervisning.</h1>
+              <h1 class="h1">Ni ska spela en lektionsmodell.<br/>Och märka att ni gör det.</h1>
               <p class="sub">${LAB.story.coldOpen.map(l=>esc(l)).join(" ")}</p>
 
               <hr class="sep" />
@@ -228,14 +228,14 @@
 
           <div class="panel">
             <div class="pad">
-              <h3 style="margin:0 0 8px">Vad ni lär er (utan att märka det)</h3>
+              <h3 style="margin:0 0 8px">Vad ni får med er</h3>
               <div class="card">
                 <ul>
-                  <li><strong>Alignment</strong> (pussel = mål)</li>
-                  <li><strong>Flow</strong> (parallella spår)</li>
-                  <li><strong>Hint-design</strong> (resurs, inte fusk)</li>
-                  <li><strong>Designordning</strong> (mål → mekanik)</li>
-                  <li><strong>Debrief</strong> (lärandet landar)</li>
+                  <li><strong>Tydlighet</strong> (eleven vet vad som räknas)</li>
+                  <li><strong>Tempo</strong> (mindre väntan, fler aktiva)</li>
+                  <li><strong>Hjälp</strong> (hur du stöttar utan att ge svaret)</li>
+                  <li><strong>Planering</strong> (börja med målet)</li>
+                  <li><strong>Avslut</strong> (så det fastnar)</li>
                 </ul>
               </div>
               <hr class="sep" />
@@ -275,8 +275,8 @@
               <span class="tag">Utforska</span>
               <span class="tag">Valfri ordning</span>
             </div>
-            <h2 style="margin:0 0 8px">Tre rum. Tre barriärer.</h2>
-            <p class="sub">Välj ett rum. Lös pusslet. Samla bevis. Kassaskåpet öppnas när alla tre barriärer är klara.</p>
+            <h2 style="margin:0 0 8px">Tre steg. Tre vanliga klassrumsproblem.</h2>
+            <p class="sub">Välj ett steg. Lös en kort uppgift. Ni samlar ‘bevis’ (lärdomar). När alla tre är klara öppnas kassaskåpet.</p>
             <div class="map" id="roomMap"></div>
             <hr class="sep" />
             <div class="row">
