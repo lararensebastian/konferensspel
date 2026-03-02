@@ -905,23 +905,52 @@
     renderLock1();
   }
 
-  function renderLock1(){
-    const uns = $('unsorted');
-    const d = $('inDigital');
-    const a = $('inAnalog');
-    const g = $('inDigilogt');
-    [uns,d,a,g].forEach(x=>x.innerHTML='');
+function renderLock1(){
+  const uns = $('unsorted');
+  const d = $('inDigital');
+  const a = $('inAnalog');
+  const g = $('inDigilogt');
+  [uns,d,a,g].forEach(x=>x.innerHTML='');
 
-    CARDS.forEach(c=>{
-      const el = document.createElement('div');
-      el.className = 'c' + (S.selectedCardId===c.id ? ' sel' : '');
-      el.textContent = c.text;
-      el.tabIndex = 0;
-      el.addEventListener('click', (e)=>{
-        if(S.solved[0]) return;
-        S.selectedCardId = (S.selectedCardId===c.id) ? null : c.id;
-        sfx('click');
-        renderLock1();
+  function makeCardEl(card){
+    const el = document.createElement('div');
+    el.className = 'c' + (S.selectedCardId===card.id ? ' sel' : '');
+    el.textContent = card.text;
+    el.tabIndex = 0;
+
+    // Klick = markera/avmarkera (oavsett var kortet ligger)
+    el.addEventListener('click', (e)=>{
+      if(S.solved[0]) return;
+      S.selectedCardId = (S.selectedCardId===card.id) ? null : card.id;
+      sfx('click');
+      renderLock1();
+    });
+
+    // Dubbelklick = tillbaka till osorterat
+    el.addEventListener('dblclick', (e)=>{
+      if(S.solved[0]) return;
+      S.lock1[card.id] = 'unsorted';
+      S.selectedCardId = null;
+      sfx('click');
+      renderLock1();
+    });
+
+    el.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===' ') el.click();
+    });
+
+    return el;
+  }
+
+  CARDS.forEach(card=>{
+    const el = makeCardEl(card);
+    const bucket = S.lock1[card.id];
+    if(bucket==='unsorted') uns.appendChild(el);
+    if(bucket==='digital') d.appendChild(el);
+    if(bucket==='analog') a.appendChild(el);
+    if(bucket==='digilogt') g.appendChild(el);
+  });
+}
       });
       el.addEventListener('keydown', (e)=>{
         if(e.key==='Enter' || e.key===' ') el.click();
