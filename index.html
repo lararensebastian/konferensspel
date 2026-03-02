@@ -6,43 +6,27 @@
   <title>Lärar-labbet: Fallet med det försvunna engagemanget</title>
   <style>
     :root{
-      --ink:#120f0d;
-      --paper:#f3efe6;
-      --paper2:#ece6d8;
-      --paper3:#ded5c3;
-      --sepia:#8b7355;
-      --sepia2:#c4a97a;
-      --sepia3:#5a4a35;
-      --red:#7a1515;
-      --green:#2d5a1b;
-      --amber:#b8860b;
+      --ink:#120f0d; --paper:#f3efe6; --paper2:#ece6d8; --paper3:#ded5c3;
+      --sepia:#8b7355; --sepia2:#c4a97a; --sepia3:#5a4a35;
+      --red:#7a1515; --green:#2d5a1b; --amber:#b8860b;
       --shadow: 0 12px 44px rgba(18,15,13,.25);
-      --r:12px;
-      --t:.25s cubic-bezier(.4,0,.2,1);
+      --r:12px; --t:.25s cubic-bezier(.4,0,.2,1);
       --mono:'Courier New','Lucida Console',monospace;
       --serif:'Georgia','Palatino Linotype','Book Antiqua',Palatino,serif;
     }
-
     *{box-sizing:border-box;margin:0;padding:0}
-    html{background:var(--ink); font-size: 20px;}
+    html{background:var(--ink); font-size:20px;}
     body{
-      min-height:100vh;
-      background:var(--paper);
-      color:var(--ink);
-      font-family:var(--serif);
-      line-height:1.6;
+      min-height:100vh; background:var(--paper); color:var(--ink); font-family:var(--serif); line-height:1.6;
       background-image:
-        radial-gradient( circle at 30% 10%, rgba(196,169,122,.12), transparent 55%),
-        radial-gradient( circle at 70% 90%, rgba(90,74,53,.10), transparent 55%),
+        radial-gradient(circle at 30% 10%, rgba(196,169,122,.12), transparent 55%),
+        radial-gradient(circle at 70% 90%, rgba(90,74,53,.10), transparent 55%),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E");
     }
 
-    /* HEADER */
     #header{
-      position:fixed; inset:0 0 auto 0;
-      z-index:50;
-      display:flex; align-items:center; justify-content:space-between;
-      gap:1rem;
+      position:fixed; inset:0 0 auto 0; z-index:50;
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
       padding:.55rem 1.2rem;
       background:linear-gradient(180deg, rgba(18,15,13,.98), rgba(18,15,13,.92));
       border-bottom:2px solid rgba(196,169,122,.35);
@@ -67,21 +51,12 @@
       padding:.25rem .6rem;
       border-radius:999px;
     }
-    .dslot{
-      width:1.2rem; text-align:center;
-      display:inline-block;
-      color:var(--paper);
-      font-weight:700;
-    }
+    .dslot{ width:2.2rem; text-align:center; display:inline-block; color:var(--paper); font-weight:700;}
     #sound{
       border:1px solid rgba(196,169,122,.35);
-      background:transparent;
-      color:var(--sepia2);
-      border-radius:999px;
-      padding:.25rem .6rem;
-      cursor:pointer;
-      transition: all var(--t);
-      font-size:1rem;
+      background:transparent; color:var(--sepia2);
+      border-radius:999px; padding:.25rem .6rem;
+      cursor:pointer; transition: all var(--t); font-size:1rem;
     }
     #sound:hover{ color:var(--paper); border-color:rgba(196,169,122,.7); transform: translateY(-1px); }
 
@@ -97,37 +72,21 @@
     p{margin:.6rem 0;}
     .muted{ color: var(--sepia); }
     .stamp{
-      display:inline-block;
-      font-family:var(--mono);
-      font-size:.7rem;
-      letter-spacing:.14em;
-      text-transform:uppercase;
-      color:var(--paper);
-      background:var(--ink);
-      padding:.25rem .7rem;
-      border-radius: 6px;
-      margin-bottom: 1rem;
+      display:inline-block; font-family:var(--mono); font-size:.7rem; letter-spacing:.14em; text-transform:uppercase;
+      color:var(--paper); background:var(--ink); padding:.25rem .7rem; border-radius:6px; margin-bottom:1rem;
     }
     .card{
-      background:var(--paper2);
-      border:1px solid var(--paper3);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
+      background:var(--paper2); border:1px solid var(--paper3); border-radius: var(--r); box-shadow: var(--shadow);
       padding: 1.5rem 1.6rem;
     }
 
     .btnrow{ display:flex; gap:.8rem; flex-wrap:wrap; margin-top: 1rem;}
     .btn{
       display:inline-flex; align-items:center; gap:.55rem;
-      padding:.75rem 1.2rem;
-      border-radius: 999px;
-      border:2px solid transparent;
-      cursor:pointer;
-      font-family:var(--serif);
-      font-weight:700;
-      font-size:1rem;
-      transition: all var(--t);
-      user-select:none;
+      padding:.75rem 1.2rem; border-radius: 999px;
+      border:2px solid transparent; cursor:pointer;
+      font-family:var(--serif); font-weight:700; font-size:1rem;
+      transition: all var(--t); user-select:none;
     }
     .btn:focus-visible{ outline: 3px solid var(--amber); outline-offset: 3px;}
     .primary{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
@@ -135,26 +94,19 @@
     .outline{ background:transparent; border-color: rgba(90,74,53,.45); color:var(--ink); }
     .outline:hover{ background: rgba(18,15,13,.05); border-color: rgba(18,15,13,.35); transform: translateY(-1px); }
 
-    /* START */
     #start{
-      background:
-        radial-gradient(circle at 50% -10%, rgba(196,169,122,.25), transparent 55%),
-        linear-gradient(180deg, #15110f, #0f0c0a);
+      background: radial-gradient(circle at 50% -10%, rgba(196,169,122,.25), transparent 55%), linear-gradient(180deg, #15110f, #0f0c0a);
       color:var(--paper);
     }
     #start .wrap{ padding: 3.4rem 0 4rem; }
     #start h1{ color: var(--paper); text-shadow: 0 10px 40px rgba(0,0,0,.45); }
     .lead{ font-size:1.02rem; color: rgba(245,240,232,.88); }
     .casebox{
-      margin-top: 1.2rem;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(196,169,122,.28);
-      border-radius: var(--r);
-      padding: 1.15rem 1.2rem;
+      margin-top: 1.2rem; background: rgba(255,255,255,.06); border: 1px solid rgba(196,169,122,.28);
+      border-radius: var(--r); padding: 1.15rem 1.2rem;
     }
     .kbd{ font-family: var(--mono); font-size: .78rem; color: rgba(196,169,122,.95); margin-top: 1rem; }
 
-    /* DOORS (more immersive) */
     #doors{
       background:
         radial-gradient(circle at 20% 20%, rgba(196,169,122,.18), transparent 60%),
@@ -163,10 +115,7 @@
     }
     .doorgrid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.2rem; }
     .door{
-      position:relative;
-      border-radius: 18px;
-      padding: 1.2rem 1.1rem 1rem;
-      cursor:pointer;
+      position:relative; border-radius: 18px; padding: 1.2rem 1.1rem 1rem; cursor:pointer;
       border: 2px solid rgba(90,74,53,.28);
       background:
         linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.0)),
@@ -175,80 +124,52 @@
       color: rgba(245,240,232,.92);
       box-shadow: 0 18px 55px rgba(18,15,13,.22);
       transition: transform var(--t), box-shadow var(--t), border-color var(--t);
-      overflow:hidden;
-      min-height: 190px;
+      overflow:hidden; min-height: 190px;
     }
     .door:hover{ transform: translateY(-4px); border-color: rgba(196,169,122,.6); box-shadow: 0 28px 80px rgba(18,15,13,.30); }
     .door:focus-visible{ outline:3px solid var(--amber); outline-offset:3px; }
     .door::before{
-      content:"";
-      position:absolute; inset: 10px;
-      border-radius: 14px;
-      border: 1px solid rgba(245,240,232,.18);
-      pointer-events:none;
+      content:""; position:absolute; inset: 10px; border-radius: 14px;
+      border: 1px solid rgba(245,240,232,.18); pointer-events:none;
     }
     .door::after{
-      content:"";
-      position:absolute; left: 12px; top: 12px;
-      width: 18px; height: 18px;
-      border-radius: 999px;
+      content:""; position:absolute; left: 12px; top: 12px; width: 18px; height: 18px; border-radius: 999px;
       background: radial-gradient(circle at 35% 35%, #f7e7b1, #b8860b 55%, rgba(0,0,0,.25));
-      opacity:.9;
-      box-shadow: 0 0 14px rgba(184,134,11,.35);
-      pointer-events:none;
+      opacity:.9; box-shadow: 0 0 14px rgba(184,134,11,.35); pointer-events:none;
     }
     .dnum{ font-family: var(--mono); font-size:.72rem; letter-spacing:.12em; color: rgba(245,240,232,.75); }
     .dname{ font-weight:900; font-size:1.05rem; margin-top:.35rem; }
     .ddesc{ font-size:.86rem; color: rgba(245,240,232,.78); margin-top:.4rem; font-style: italic; }
-    .dkb{ position:absolute; right: 12px; bottom: 12px; font-family: var(--mono); font-size:.7rem; color: rgba(245,240,232,.75); background: rgba(0,0,0,.25); padding:.18rem .45rem; border-radius: 6px; border:1px solid rgba(245,240,232,.12);}
+    .dkb{ position:absolute; right: 12px; bottom: 12px; font-family: var(--mono); font-size:.7rem; color: rgba(245,240,232,.75);
+      background: rgba(0,0,0,.25); padding:.18rem .45rem; border-radius: 6px; border:1px solid rgba(245,240,232,.12);}
     .door.good{ box-shadow: 0 18px 55px rgba(45,90,27,.18); }
     .door.good:hover{ border-color: rgba(74,140,42,.7); box-shadow: 0 28px 80px rgba(45,90,27,.24); }
 
-    /* MICRO */
-    .micro{
-      max-width: 760px;
-      margin: 0 auto;
-      text-align:center;
-    }
+    .micro{ max-width: 760px; margin: 0 auto; text-align:center; }
     .micro .icon{ font-size: 3.3rem; }
     .micro .card{ text-align:left; }
 
-    /* LAB */
     #lab .wrap{ padding-top: 1.9rem; }
     .toprow{ display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
     .progress{ display:flex; gap:.55rem; flex-wrap:wrap; }
     .pill{
-      font-family: var(--mono);
-      font-size:.78rem;
-      background: rgba(90,74,53,.12);
-      border:1px solid rgba(90,74,53,.18);
-      color: var(--sepia3);
-      padding: .28rem .65rem;
-      border-radius: 999px;
+      font-family: var(--mono); font-size:.78rem;
+      background: rgba(90,74,53,.12); border:1px solid rgba(90,74,53,.18);
+      color: var(--sepia3); padding: .28rem .65rem; border-radius: 999px;
     }
     .pill.done{ background: rgba(45,90,27,.12); border-color: rgba(45,90,27,.22); color: var(--green); }
 
     .panel{
-      margin-top: 1rem;
-      background: var(--paper2);
-      border: 2px solid var(--paper3);
-      border-radius: var(--r);
-      padding: 1.25rem 1.25rem 1.1rem;
+      margin-top: 1rem; background: var(--paper2); border: 2px solid var(--paper3);
+      border-radius: var(--r); padding: 1.25rem 1.25rem 1.1rem;
     }
     .panel.active{ border-color: rgba(196,169,122,.75); }
     .panel.solved{ border-color: rgba(74,140,42,.55); background: rgba(45,90,27,.04); }
     .tag{
-      font-family: var(--mono);
-      font-size: .72rem;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--sepia3);
-      display:inline-block;
-      background: rgba(90,74,53,.10);
-      border:1px solid rgba(90,74,53,.14);
-      padding: .22rem .55rem;
-      border-radius: 999px;
-      margin-bottom: .5rem;
+      font-family: var(--mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--sepia3); display:inline-block;
+      background: rgba(90,74,53,.10); border:1px solid rgba(90,74,53,.14);
+      padding: .22rem .55rem; border-radius: 999px; margin-bottom: .5rem;
     }
 
     .story{
@@ -258,50 +179,34 @@
       border-radius: var(--r);
       padding: 1rem 1.1rem;
       margin: .85rem 0 1rem;
-      position:relative;
-      overflow:hidden;
+      position:relative; overflow:hidden;
     }
     .story::before{
-      content:"“";
-      position:absolute;
-      left: .7rem;
-      top: -1.3rem;
-      font-size: 6rem;
-      color: rgba(255,255,255,.04);
-      font-family: var(--serif);
+      content:"“"; position:absolute; left:.7rem; top:-1.3rem;
+      font-size: 6rem; color: rgba(255,255,255,.04); font-family: var(--serif);
       pointer-events:none;
     }
     .story .lbl{
-      font-family: var(--mono);
-      font-size:.7rem;
-      letter-spacing:.12em;
-      text-transform: uppercase;
-      color: var(--sepia2);
-      margin-bottom: .4rem;
+      font-family: var(--mono); font-size:.7rem; letter-spacing:.12em; text-transform: uppercase;
+      color: var(--sepia2); margin-bottom: .4rem;
     }
 
     .feedback{
-      display:none;
-      margin-top:.85rem;
-      padding:.8rem 1rem;
-      border-radius: var(--r);
-      border:1px solid;
-      font-size:.9rem;
-      animation: fade .2s ease both;
+      display:none; margin-top:.85rem; padding:.8rem 1rem; border-radius: var(--r); border:1px solid;
+      font-size:.9rem; animation: fade .2s ease both;
     }
     .feedback.show{ display:block; }
     .ok{ background: rgba(45,90,27,.08); border-color: rgba(45,90,27,.35); color: var(--green); }
     .err{ background: rgba(122,21,21,.08); border-color: rgba(122,21,21,.35); color: var(--red); }
     .hint{ background: rgba(184,134,11,.08); border-color: rgba(184,134,11,.35); color: var(--amber); }
 
-    /* Lock 1: quick sort (simple, not drag) */
     .row{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:.8rem; margin-top:.7rem; }
     .col{
       background: rgba(255,255,255,.45);
       border:1px dashed rgba(90,74,53,.25);
       border-radius: 14px;
       padding:.7rem;
-      min-height: 160px;
+      min-height: 170px;
       cursor:pointer;
       transition: all var(--t);
     }
@@ -316,11 +221,15 @@
       font-size:.86rem;
       cursor:pointer;
       transition: all var(--t);
+      position:relative;
     }
     .c:hover{ border-color: rgba(90,74,53,.45); transform: translateY(-1px); }
     .c.sel{ border-color: rgba(184,134,11,.8); box-shadow: 0 0 0 2px rgba(184,134,11,.35) inset; background: rgba(184,134,11,.06); }
+    .c .mini{
+      position:absolute; right:10px; top:10px;
+      font-family: var(--mono); font-size:.68rem; color: rgba(90,74,53,.7);
+    }
 
-    /* Lock 2: choose 2 */
     .checks{ display:flex; flex-direction:column; gap:.55rem; margin-top:.6rem; }
     .chk{
       display:flex; align-items:flex-start; gap:.7rem;
@@ -335,12 +244,10 @@
     .chk input{ margin-top:.2rem; width: 18px; height: 18px; }
     .chk.picked{ border-color: rgba(90,74,53,.55); background: rgba(90,74,53,.08); }
 
-    /* Lock 3: match */
     .match{ display:flex; flex-direction:column; gap:.6rem; margin-top:.6rem; }
     .mrow{
       display:grid; grid-template-columns: 1fr 1.7fr;
-      gap:.65rem;
-      align-items:center;
+      gap:.65rem; align-items:center;
       padding:.7rem .8rem;
       background: rgba(255,255,255,.42);
       border:1px solid rgba(90,74,53,.18);
@@ -357,16 +264,11 @@
     }
     select:focus{ outline: 3px solid rgba(184,134,11,.35); border-color: rgba(184,134,11,.65); }
 
-    /* SAFE */
     #final{
       background: linear-gradient(180deg, #15110f, #0f0c0a);
       color: var(--paper);
     }
-    .safe{
-      max-width: 720px;
-      margin: 0 auto;
-      text-align:center;
-    }
+    .safe{ max-width: 720px; margin: 0 auto; text-align:center; }
     .safe .box{
       width: 170px; height: 170px;
       margin: 1.1rem auto .85rem;
@@ -384,9 +286,7 @@
       transform: translateY(-2px);
     }
     .codehint{
-      text-align:left;
-      margin: 0 auto;
-      max-width: 520px;
+      text-align:left; margin: 0 auto; max-width: 520px;
       background: rgba(255,255,255,.06);
       border:1px solid rgba(196,169,122,.25);
       border-radius: var(--r);
@@ -397,15 +297,10 @@
     .codehint strong{ color: var(--paper); }
     .code{
       margin-top: .8rem;
-      display:flex;
-      justify-content:center;
-      gap:.6rem;
-      flex-wrap:wrap;
-      align-items:center;
+      display:flex; justify-content:center; gap:.6rem; flex-wrap:wrap; align-items:center;
     }
     .code input{
-      width: 240px;
-      text-align:center;
+      width: 240px; text-align:center;
       padding: .75rem .9rem;
       border-radius: 16px;
       border:2px solid rgba(196,169,122,.35);
@@ -417,11 +312,8 @@
     }
     .code input:focus{ outline:none; border-color: rgba(196,169,122,.75); }
 
-    /* WIN / CLOSING */
     .center{ text-align:center; max-width: 820px; margin: 0 auto; }
-    .big{ font-family: var(--mono); font-size: 2.4rem; letter-spacing:.06em; margin:.4rem 0; }
 
-    /* Responsive */
     @media (max-width: 820px){
       html{ font-size: 18px;}
       .doorgrid{ grid-template-columns: 1fr; }
@@ -448,7 +340,6 @@
 
 <main>
 
-  <!-- START -->
   <section id="start" class="scene active" aria-label="Start">
     <div class="wrap">
       <div class="stamp">IM-KONFERENS · GAMIFICATION</div>
@@ -469,7 +360,6 @@
     </div>
   </section>
 
-  <!-- DOORS -->
   <section id="doors" class="scene" aria-label="Dörrar">
     <div class="wrap">
       <div class="stamp">STEG 1</div>
@@ -505,7 +395,6 @@
     </div>
   </section>
 
-  <!-- MICRO -->
   <section id="micro" class="scene" aria-label="Återvändsgränd">
     <div class="wrap micro">
       <div class="stamp" id="microStamp">ÅTERVÄNDSGRÄND</div>
@@ -522,7 +411,6 @@
     </div>
   </section>
 
-  <!-- LAB -->
   <section id="lab" class="scene" aria-label="Labbet">
     <div class="wrap">
       <div class="toprow">
@@ -538,7 +426,6 @@
         </div>
       </div>
 
-      <!-- LOCK 1 -->
       <div class="panel active" id="panel1">
         <div class="tag">LÅS 1 · SORTERING</div>
         <h3>Digitalt, analogt & digilogt</h3>
@@ -546,7 +433,9 @@
         <div class="story">
           <div class="lbl">🔍 Detektivens anteckning</div>
           <p>“Escape rooms i klassrum är oftast <strong>digitala</strong>, <strong>analoga</strong> eller <strong>digiloga</strong>.”</p>
-          <p class="muted" style="color:rgba(196,169,122,.95); margin:.35rem 0 0;">Klicka ett kort → klicka en kolumn.</p>
+          <p class="muted" style="color:rgba(196,169,122,.95); margin:.35rem 0 0;">
+            Klicka ett kort → klicka en kolumn. <strong>Dubbelklick</strong> på kort = tillbaka.
+          </p>
         </div>
 
         <div class="cards" id="unsorted"></div>
@@ -573,7 +462,6 @@
         <div class="feedback" id="fb1"></div>
       </div>
 
-      <!-- LOCK 2 -->
       <div class="panel" id="panel2">
         <div class="tag">LÅS 2 · VÄLJ TVÅ</div>
         <h3>Vad sabbar ett escape room?</h3>
@@ -593,7 +481,6 @@
         <div class="feedback" id="fb2"></div>
       </div>
 
-      <!-- LOCK 3 -->
       <div class="panel" id="panel3">
         <div class="tag">LÅS 3 · MATCHNING</div>
         <h3>Mål → mekanik</h3>
@@ -619,7 +506,6 @@
     </div>
   </section>
 
-  <!-- FINAL -->
   <section id="final" class="scene" aria-label="Slutkod">
     <div class="wrap safe">
       <div class="stamp" style="background:rgba(196,169,122,.22); border:1px solid rgba(196,169,122,.35)">SISTA STEGET</div>
@@ -633,7 +519,7 @@
 
       <div class="codehint">
         <p><strong>Ledtråd (subtil):</strong> Gör någonting med siffrorna. Kan de bli bokstäver?</p>
-        <p class="muted" style="color:rgba(196,169,122,.95)">Tips: Testa “alfabet-positioner” (1=A, 2=B, …).</p>
+        <p class="muted" style="color:rgba(196,169,122,.95)">Tips: 1=A, 2=B, 3=C …</p>
       </div>
 
       <div class="code">
@@ -649,7 +535,6 @@
     </div>
   </section>
 
-  <!-- WIN -->
   <section id="win" class="scene" aria-label="Vinst">
     <div class="wrap center">
       <div class="stamp">FALL LÖST</div>
@@ -657,7 +542,7 @@
       <p class="lead">…och ni gjorde det genom att <em>uppleva</em> design, inte bara prata om den.</p>
 
       <div class="card" style="margin-top:1rem; text-align:left;">
-        <h3>Vad ni just gjorde (utan att tänka på det)</h3>
+        <h3>Vad ni just gjorde</h3>
         <ul style="padding-left:1.2rem; margin-top:.6rem;">
           <li><strong>Mål → mekanik:</strong> varje pussel tränade en tydlig idé.</li>
           <li><strong>Flow:</strong> korta steg, tydlig feedback, små vinster.</li>
@@ -672,7 +557,6 @@
     </div>
   </section>
 
-  <!-- CLOSING -->
   <section id="closing" class="scene" aria-label="Avslutning">
     <div class="wrap">
       <div class="stamp">NÄSTA STEG</div>
@@ -682,7 +566,7 @@
         <p>🖐 <strong>Analogt escape room:</strong> <u>Sal 4008</u> (här)</p>
         <p>⚡ <strong>Digilogt escape room:</strong> <u>Sal 4005</u> (kan ändras)</p>
         <hr style="border:none;border-top:1px solid rgba(90,74,53,.18); margin:1rem 0;">
-        <p><strong>Efter ni testat:</strong> sätt er i <strong>ämnesgrupper</strong> (sv/eng/matte/tillval) och gör uppgiften nedan.</p>
+        <p><strong>Efter ni testat:</strong> sätt er i <strong>ämnesgrupper</strong> (sv/eng/matte/tillval) och gör uppgiften.</p>
       </div>
 
       <div class="card" style="margin-top:1rem;">
@@ -714,7 +598,7 @@
 
 <script>
   /********************
-   * STATE / SCENES
+   * STATE / HELPERS
    ********************/
   const TIMER_SECONDS = 12 * 60;
   const S = {
@@ -726,7 +610,7 @@
     selectedCardId: null,
     lock1: {}, // cardId -> bucket
     solved: [false,false,false],
-    digits: ['?','?','?'], // 3 digits appear
+    digits: ['?','?','?'],
   };
 
   const $ = (id)=>document.getElementById(id);
@@ -762,16 +646,13 @@
     if(name==='ok'){ tone(523,0.09,'sine',0.10); setTimeout(()=>tone(659,0.10,'sine',0.10),90); setTimeout(()=>tone(784,0.11,'sine',0.10),180); }
     if(name==='err'){ tone(180,0.18,'sawtooth',0.08); setTimeout(()=>tone(130,0.18,'sawtooth',0.06),140); }
     if(name==='door'){
-      // faux door creak: descending noisy-ish stack
       tone(420,0.08,'triangle',0.06);
       setTimeout(()=>tone(330,0.10,'triangle',0.06),60);
       setTimeout(()=>tone(250,0.12,'triangle',0.06),130);
       setTimeout(()=>tone(180,0.14,'triangle',0.05),210);
     }
     if(name==='unlock'){ tone(880,0.07,'square',0.05); setTimeout(()=>tone(990,0.07,'square',0.05),70); setTimeout(()=>tone(1040,0.07,'square',0.05),140); }
-    if(name==='win'){
-      [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.14,'sine',0.11), i*120));
-    }
+    if(name==='win'){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.14,'sine',0.11), i*120)); }
   }
 
   $('sound').addEventListener('click', ()=>{
@@ -803,7 +684,6 @@
       if(S.timeLeft<=0){
         clearInterval(S.timerRef);
         S.over = true;
-        // Timeout -> still allow proceed but tell them (simple)
         sfx('err');
         alert('Tiden är slut! Men vi kör vidare för att hinna igenom upplägget.');
       }
@@ -851,13 +731,6 @@
   ];
   const CORRECT = { A:'1', B:'2', C:'3' };
 
-  // DIGITS: lock1 gives 9 (I), lock2 gives 13 (M), lock3 gives 0 (fyller bara 3 siffror -> gör "913")
-  // Vi visar som tre slots: [9] [13] [ ] men tre slots kräver 3; vi gör 9,1,3 istället och säger "913".
-  // Enkel lösning: ge 9, 1, 3 över tre lås. Det blir ändå "IM" via A1Z26: 9=I, 13=M, men då saknas 13.
-  // Så: Vi ger 9 på lås1 och 13 på lås2, och lås3 ger "–" men då har vi 3 slots. Vi gör slot2 = 13 och slot3 = (tom).
-  // MEN du ville att koden kan vara 913. Då ger vi: lås1 -> 9, lås2 -> 13 (som skrivs "13"), lås3 -> (inget). Och i header visar vi tre slots: 9 / 13 / ?.
-  // Final hint: "Kan de bli bokstäver?" => 9=I, 13=M => IM. Final input accepterar IM/im/913.
-  // Slot3 fylls med "—" när lock3 lösts (för att visa att allt är klart).
   const DIGIT_LOCK1 = '9';
   const DIGIT_LOCK2 = '13';
   const DIGIT_LOCK3 = '—';
@@ -873,11 +746,9 @@
     S.selectedCardId = null;
     S.lock1 = {};
     S.solved = [false,false,false];
-    S.digits = ['?','?','?'];
     setDigit(0,'?'); setDigit(1,'?'); setDigit(2,'?');
     $('toFinal').style.display = 'none';
 
-    // panels
     ['panel1','panel2','panel3'].forEach((pid,i)=>{
       const p = $(pid);
       p.classList.remove('solved','active');
@@ -887,14 +758,12 @@
     $('p2').className = 'pill'; $('p2').textContent = '🔒 Lås 2';
     $('p3').className = 'pill'; $('p3').textContent = '🔒 Lås 3';
 
-    // feedback
     ['fb1','fb2','fb3','fbFinal'].forEach(id=>{
       const el = $(id);
       el.className = 'feedback';
-      el.textContent = '';
+      el.innerHTML = '';
     });
 
-    // safe
     $('safeBox').classList.remove('open');
     $('safeLock').textContent = '🔒';
     $('finalInput').value = '';
@@ -905,58 +774,51 @@
     renderLock1();
   }
 
-function renderLock1(){
-  const uns = $('unsorted');
-  const d = $('inDigital');
-  const a = $('inAnalog');
-  const g = $('inDigilogt');
-  [uns,d,a,g].forEach(x=>x.innerHTML='');
+  // ✅ FIX: kort kan flyttas om, oavsett var de ligger.
+  // Klick = markera/avmarkera. Kolumnklick = flytta. Dubbelklick = tillbaka.
+  function renderLock1(){
+    const uns = $('unsorted');
+    const d = $('inDigital');
+    const a = $('inAnalog');
+    const g = $('inDigilogt');
+    [uns,d,a,g].forEach(x=>x.innerHTML='');
 
-  function makeCardEl(card){
-    const el = document.createElement('div');
-    el.className = 'c' + (S.selectedCardId===card.id ? ' sel' : '');
-    el.textContent = card.text;
-    el.tabIndex = 0;
+    function makeCardEl(card){
+      const el = document.createElement('div');
+      el.className = 'c' + (S.selectedCardId===card.id ? ' sel' : '');
+      el.tabIndex = 0;
+      el.textContent = card.text;
 
-    // Klick = markera/avmarkera (oavsett var kortet ligger)
-    el.addEventListener('click', (e)=>{
-      if(S.solved[0]) return;
-      S.selectedCardId = (S.selectedCardId===card.id) ? null : card.id;
-      sfx('click');
-      renderLock1();
-    });
+      const mini = document.createElement('span');
+      mini.className = 'mini';
+      mini.textContent = 'dbl⇢↩';
+      el.appendChild(mini);
 
-    // Dubbelklick = tillbaka till osorterat
-    el.addEventListener('dblclick', (e)=>{
-      if(S.solved[0]) return;
-      S.lock1[card.id] = 'unsorted';
-      S.selectedCardId = null;
-      sfx('click');
-      renderLock1();
-    });
-
-    el.addEventListener('keydown', (e)=>{
-      if(e.key==='Enter' || e.key===' ') el.click();
-    });
-
-    return el;
-  }
-
-  CARDS.forEach(card=>{
-    const el = makeCardEl(card);
-    const bucket = S.lock1[card.id];
-    if(bucket==='unsorted') uns.appendChild(el);
-    if(bucket==='digital') d.appendChild(el);
-    if(bucket==='analog') a.appendChild(el);
-    if(bucket==='digilogt') g.appendChild(el);
-  });
-}
+      el.addEventListener('click', ()=>{
+        if(S.solved[0]) return;
+        S.selectedCardId = (S.selectedCardId===card.id) ? null : card.id;
+        sfx('click');
+        renderLock1();
       });
+
+      el.addEventListener('dblclick', ()=>{
+        if(S.solved[0]) return;
+        S.lock1[card.id] = 'unsorted';
+        S.selectedCardId = null;
+        sfx('click');
+        renderLock1();
+      });
+
       el.addEventListener('keydown', (e)=>{
         if(e.key==='Enter' || e.key===' ') el.click();
       });
 
-      const bucket = S.lock1[c.id];
+      return el;
+    }
+
+    CARDS.forEach(card=>{
+      const el = makeCardEl(card);
+      const bucket = S.lock1[card.id];
       if(bucket==='unsorted') uns.appendChild(el);
       if(bucket==='digital') d.appendChild(el);
       if(bucket==='analog') a.appendChild(el);
@@ -975,7 +837,6 @@ function renderLock1(){
       cb.addEventListener('change', ()=>{
         sfx('click');
         row.classList.toggle('picked', cb.checked);
-        // max 2
         const all = [...box.querySelectorAll('input:checked')];
         if(all.length>2){
           cb.checked = false;
@@ -1011,24 +872,18 @@ function renderLock1(){
     });
   }
 
-  /********************
-   * SOLVE HELPERS
-   ********************/
   function unlock(i){
     S.solved[i]=true;
-    // panel style
     const pid = 'panel' + (i+1);
     $(pid).classList.add('solved');
     $(pid).classList.remove('active');
 
-    // progress pill
     const pill = $('p'+(i+1));
     pill.classList.add('done');
     pill.textContent = '🔓 Lås ' + (i+1);
 
     sfx('unlock');
 
-    // activate next
     if(i===0) $('panel2').classList.add('active');
     if(i===1) $('panel3').classList.add('active');
 
@@ -1060,9 +915,13 @@ function renderLock1(){
     startGame();
   });
 
-  $('backToStart').addEventListener('click', ()=>{ sfx('click'); show('start'); headerOff(); clearInterval(S.timerRef); });
+  $('backToStart').addEventListener('click', ()=>{
+    sfx('click');
+    show('start');
+    headerOff();
+    clearInterval(S.timerRef);
+  });
 
-  // Doors
   function openDoor(n){
     sfx('door');
     if(n===3){ show('lab'); return; }
@@ -1082,7 +941,7 @@ function renderLock1(){
   });
   $('microBack').addEventListener('click', ()=>{ sfx('door'); show('doors'); });
 
-  // Lock 1 column click
+  // ✅ FIX: kolumnklick flyttar alltid valt kort, även om kortet kommer från en kolumn.
   document.querySelectorAll('[data-col]').forEach(col=>{
     col.addEventListener('click', ()=>{
       if(S.solved[0] || !S.selectedCardId) return;
@@ -1093,7 +952,6 @@ function renderLock1(){
     });
   });
 
-  // Hints
   $('hint1').addEventListener('click', ()=>{
     const fb = $('fb1');
     fb.className = 'feedback show hint';
@@ -1113,7 +971,6 @@ function renderLock1(){
     sfx('click');
   });
 
-  // Check lock1
   $('check1').addEventListener('click', ()=>{
     if(S.solved[0]) return;
     const correct = CARDS.filter(c=>S.lock1[c.id]===c.correct).length;
@@ -1131,7 +988,6 @@ function renderLock1(){
     }
   });
 
-  // Check lock2
   $('check2').addEventListener('click', ()=>{
     if(S.solved[1]) return;
     const checked = [...$('checks').querySelectorAll('input:checked')].map(x=>x.id);
@@ -1156,7 +1012,6 @@ function renderLock1(){
     }
   });
 
-  // Check lock3
   $('check3').addEventListener('click', ()=>{
     if(S.solved[2]) return;
     let allPicked=true, ok=0;
@@ -1188,16 +1043,11 @@ function renderLock1(){
   $('toFinal').addEventListener('click', ()=>{ sfx('door'); show('final'); $('finalInput').focus(); });
   $('backToLab').addEventListener('click', ()=>{ sfx('door'); show('lab'); });
 
-  // Final check
   function normalize(x){ return (x||'').trim().toLowerCase().replace(/\s+/g,''); }
   function checkFinal(){
-    const raw = $('finalInput').value;
-    const v = normalize(raw);
+    const v = normalize($('finalInput').value);
     const fb = $('fbFinal');
-
-    // Accept IM / im / 913 too (if someone just types the numbers)
     const ok = (v==='im' || v==='913');
-
     if(ok){
       $('safeBox').classList.add('open');
       $('safeLock').textContent='🔓';
@@ -1213,7 +1063,6 @@ function renderLock1(){
       sfx('err');
     }
   }
-
   $('finalBtn').addEventListener('click', checkFinal);
   $('finalInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') checkFinal(); });
 
@@ -1226,7 +1075,6 @@ function renderLock1(){
   $('restart').addEventListener('click', restart);
   $('restart2').addEventListener('click', restart);
 
-  // Keyboard shortcuts
   document.addEventListener('keydown', (e)=>{
     const active = document.querySelector('.scene.active')?.id;
     if(active==='start' && e.key==='Enter'){ $('startBtn').click(); }
@@ -1237,7 +1085,6 @@ function renderLock1(){
     }
   });
 
-  // initial render
   renderTimer();
 </script>
 
